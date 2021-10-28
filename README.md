@@ -112,7 +112,9 @@ There are several arguments which can be passed to AQP, some are required, other
 The other options are:
 
 - ``--plot_graph``: Flag to create a diagram of the pipeline, default is False.
+- ``--output_dir``: Path to a directory for any files produced, default is ``results/``
 - ``--graph_output_file``: Path to file to store the created DOT file, do NOT include the file extension (this is done automatically), default is "results/graph". This gets expanded to, for example, "results/graph.dot".
+- ``--validate_graph``: Signals that the pipeline should just be validated and optionally graphed. Pipeline will not run if this is set to ``True``.
 - ``--debug``: Enables debug logging.
 - ``--version``: Prints the version.
 
@@ -126,7 +128,7 @@ In future we plan on adding more quality metrics, datasets and core nodes to the
 
 ## Node Abstract Class
 
-Nodes are used to encapsulate some unique logic/functionality, but there is common properties/functionality to all nodes. These are defined in the abstract Node class (found in nodes/node.py). 
+Nodes are used to encapsulate some unique logic/functionality, but there is common properties/functionality to all nodes. These are defined in the abstract Node class (found in nodes/node.py). Node **must be** contained within the ``nodes`` directory. Any node placed in this directory will be detected by the pipeline and will be available for use.
 
 ```python
 class Node(object):
@@ -247,7 +249,7 @@ The pipeline is defined as a collection of connected nodes. This information is 
 
 The above configuration results in a graph that looks like the image below. 
 
-![](C:\Users\jgera\Documents\ComputerScience\AQP\images\example_simple_pipeline.png "Simple pipeline")
+![](images\example_simple_pipeline.png "Simple pipeline")
 
 ## Advanced Nodes
 

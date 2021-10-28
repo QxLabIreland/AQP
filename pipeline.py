@@ -62,8 +62,8 @@ def main() -> None:
 
     if args.plot_graph:
         nx_graph = graphutils.build_nx_graph(root_node, edge_list=[], nx_graph=nx.DiGraph())
-        if not os.path.exists(args.graph_output_file):
-            os.makedirs(args.graph_output_file)
+        if not os.path.exists(args.output_dir):
+            os.makedirs(args.output_dir)
         for node in nx_graph.nodes:
             draw_options = nx_graph.nodes[node]['data'].draw_options
             if draw_options:
@@ -96,6 +96,7 @@ def init_argparser() -> argparse.ArgumentParser:
     optional = parser.add_argument_group('Optional Arguments')
     optional.add_argument('--validate_graph', action='store_true', default=False)
     optional.add_argument('--plot_graph', action='store_true', default=False)
+    optional.add_argument('--output_dir', default="results/")
     optional.add_argument('--graph_output_file', default='results/graph')
     optional.add_argument('--debug', action='store_true', default=False)
     optional.add_argument('-v', '--version', action='version',
