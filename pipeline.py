@@ -21,7 +21,7 @@ Command Line Args:
         
         --version: displays the version info.
 """
-# /usr/bin/env python3.9
+# /usr/bin/env python3.8
 
 import argparse
 import json
@@ -36,7 +36,7 @@ from networkx.drawing.nx_pydot import write_dot
 
 LOGGER_NAME = 'pipeline'
 
-VERSION = '0.99'
+VERSION = '1.0'
 logging.basicConfig(
     format='%(asctime)s, %(levelname)s %(message)s', datefmt='%H:%M:%S')
 LOGGER = logging.getLogger(LOGGER_NAME)
@@ -60,7 +60,6 @@ def main() -> None:
         LOGGER.error(err)
         sys.exit(-1)
 
-
     if args.plot_graph:
         nx_graph = graphutils.build_nx_graph(root_node, edge_list=[], nx_graph=nx.DiGraph())
         if not os.path.exists(args.graph_output_file):
@@ -72,6 +71,10 @@ def main() -> None:
         write_dot(nx_graph, args.graph_output_file + '.dot')    
         LOGGER.info('Graphs written to .dot files')
 
+    if args.validate_graph:
+        LOGGER.info("Early exit after validation.")
+        sys.exit(0)
+        
     result = {}
     LOGGER.info("Running pipeline...")
     graphutils.run_node(root_node, result)
@@ -91,7 +94,8 @@ def init_argparser() -> argparse.ArgumentParser:
     required.add_argument('--root_node_id', required=True)
     required.add_argument('--graph_config_path', required=True)
     optional = parser.add_argument_group('Optional Arguments')
-    optional.add_argument('--plot_graph',action='store_true', default=False)
+    optional.add_argument('--validate_graph', action='store_true', default=False)
+    optional.add_argument('--plot_graph', action='store_true', default=False)
     optional.add_argument('--graph_output_file', default='results/graph')
     optional.add_argument('--debug', action='store_true', default=False)
     optional.add_argument('-v', '--version', action='version',

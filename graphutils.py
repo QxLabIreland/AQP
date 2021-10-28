@@ -88,6 +88,9 @@ def run_node(node: Node, result: dict, **kwargs):
             stack.append(children[i])
 
 
+DESERIALIZED_NODES = []
+n_id = 0
+
 def build_graph(graph_definition: dict) -> Dict[Node, str]:
     """
     Creates the graph using the provided graph definition. Does this by
@@ -111,8 +114,12 @@ def build_graph(graph_definition: dict) -> Dict[Node, str]:
     """
     edges = {}
     nodes = {}
+    global n_id
     for node_definition in graph_definition:
         graph_definition[node_definition]['id_'] = node_definition
+        graph_definition[node_definition]['n_id'] = n_id
+        n_id += 1
+        DESERIALIZED_NODES.append(node_definition)
         nodes[node_definition] = _deserialize(graph_definition[node_definition], node_definition)
         edges[node_definition] = graph_definition[node_definition].get('children', [])
 
@@ -124,7 +131,7 @@ def build_graph(graph_definition: dict) -> Dict[Node, str]:
 def get_leaf_nodes(nodes):
     return[nodes[node] for node in nodes if nodes[node].is_leaf() and not isinstance(nodes[node], LoopNode)]
 
-
+# Still WIP for the most part
 def build_nx_graph(node: Node, edge_list, nx_graph, recursive=False):
     
     def _handle_execution_node(execution_node: Node, node_id: str, edges_to_rework: list, edge_list: list, nx_graph: nx.DiGraph):
@@ -163,5 +170,42 @@ def build_nx_graph(node: Node, edge_list, nx_graph, recursive=False):
     
     nx_graph.add_edges_from(edge_list)
     return nx_graph
+
     
-    
+def check_for_cycles(start_node):
+    stack = []
+    stack.append(start_node)
+    ordering = []
+    visited = set()
+    while len(stack) > 0:
+        node = stack.pop()
+        if node.n_id in visited:
+            LOGGER.error("Cycle Detected, node with id %s is referenced to create a cycle", node.id_)            
+            return None
+        visited.add(node.n_id)
+        ordering.append(node.id_)
+        children = node.children
+
+        if isinstance(node, (LoopNode, EncapsulationNode)):
+            for c in children:
+                stack.append(c)    
+            stack.append(node.execution_node)
+        else:
+            for i in range(len(children)-1, -1, -1):
+                stack.append(children[i])       
+
+    return ordering
+
+
+def has_unreachable_nodes(ordering):
+    for deserialized_node in DESERIALIZED_NODES:
+        if deserialized_node not in ordering:
+            LOGGER.error("Found unreachable node %s", deserialized_node)
+            return True
+    return False
+
+
+def validate_graph(root_node):
+    if (ordering := check_for_cycles(root_node)) is None:
+        return False
+    return not has_unreachable_nodes(ordering), ordering
