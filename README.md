@@ -249,7 +249,7 @@ The pipeline is defined as a collection of connected nodes. This information is 
 
 The above configuration results in a graph that looks like the image below. 
 
-![](images\example_simple_pipeline.png "Simple pipeline")
+![](images/example_simple_pipeline.png "Simple pipeline")
 
 ## Advanced Nodes
 
