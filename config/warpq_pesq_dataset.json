@@ -107,9 +107,6 @@
 				"function_args": {
 					"key": "warp_q_mfcc",
 					"col_name": "Ref_Wave"
-				},
-				"draw_options": {
-					"fillcolor": "#d55c00B3"
 				}
 			},
 			"PESQ": {

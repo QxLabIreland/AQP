@@ -3,7 +3,7 @@
 		"type": "LoadCSVAsDFNode",
 		"children": ["Wrangle Data"],
 		"output_key": "dataframe",
-		"path_to_csv": "resources/quickstart_genspeech.csv"
+		"path_to_csv": "resources/genspeech.csv"
 	},
 	"Wrangle Data": {
 		"type": "TransformNode",
@@ -22,9 +22,9 @@
 		"output_key": "sr",
 		"variable_value": 16000
 	},
-	"DF Loop": {
+    "DF Loop": {
 		"type": "LoopNode",
-		"children": ["DF to csv"],
+		"children": ["DF to CSV"],
 		"output_key": "dataset_output",
 		"iterable_key": "wav_files",
 		"start_node": "Tuple Transform",
@@ -50,7 +50,7 @@
 			},
 			"Load Test": {
 				"type": "LoadSignalNode",
-				"children": ["VAD", "PESQ"],
+				"children": ["VAD", "ViSQOL_Mel", "PESQ"],
 				"target_sample_rate": 16000,
 				"signal_key": "degraded",
 				"output_key": "degraded_signal",
@@ -58,7 +58,7 @@
 			},
 			"VAD": {
 				"type": "WarpQVADNode",
-				"children": ["MFCC", "Mel"],
+				"children": ["MFCC"],
 				"ref_sig_key": "reference_signal",
 				"deg_sig_key": "degraded_signal"
 			},
@@ -68,34 +68,12 @@
 				"ref_sig_key": "reference_signal",
 				"deg_sig_key": "degraded_signal"
 			},
-			"Mel": {
-				"type": "MelNode",
-				"children": ["Mel SDTW"],
-				"ref_sig_key": "reference_signal",
-				"deg_sig_key": "degraded_signal"
-			},
-			"Mel SDTW": {
-				"type": "WarpQSDTWNode",
-				"children": ["Update DF Mel"],
-				"output_key": "warp_q_mel",
-				"mfcc_ref_key": "mfcc_ref",
-				"mfcc_coded_patch_key": "mfcc_coded_patch"
-			},
 			"MFCC SDTW": {
 				"type": "WarpQSDTWNode",
 				"children": ["Update DF MFCC"],
 				"output_key": "warp_q_mfcc",
 				"mfcc_ref_key": "mfcc_ref",
 				"mfcc_coded_patch_key": "mfcc_coded_patch"
-			},
-			"Update DF Mel": {
-				"type": "TransformNode",
-				"transform_name": "update_df",
-				"target_key": "dataframe",
-				"function_args": {
-					"key": "warp_q_mel",
-					"col_name": "Ref_Wave"
-				}
 			},
 			"Update DF MFCC": {
 				"type": "TransformNode",
@@ -106,7 +84,28 @@
 					"col_name": "Ref_Wave"
 				}
 			},
-			"PESQ": {
+            "ViSQOL_Mel": {
+				"type": "EncapsulationNode",
+				"children": ["Map MOS"],
+				"start_node": "visqol_args",
+				"path_to_node_config": "config/visqol/graphs/default_visqol_mel.json"
+			},
+			"Map MOS": {
+                "type": "MOSMapperNode",
+                "children": ["Update DF (Mel)"],
+                "output_key": "mos_mel",
+                "target_key": "vnsims_mel.similarity_data",
+                "visqol_args_key": "visqol_args"
+            },
+            "Update DF (Mel)": {
+        		"type": "TransformNode",
+        		"transform_name": "update_df",
+        		"target_key": "dataframe",
+        		"function_args": {
+        			"key": "mos_mel"
+        		}
+        	},
+            "PESQ": {
 				"type": "EncapsulationNode",
 				"children": ["Update DF PESQ"],
 				"start_node": "pesq_alignment",
@@ -132,7 +131,7 @@
 			}
 		}
 	},
-	"DF to csv": {
+	"DF to CSV": {
 		"type": "TransformNode",
 		"children": ["Graph Output"],
 		"transform_name": "to_csv",
@@ -141,12 +140,7 @@
 			"output_file_name": "results/RESULTS.csv"
 		}
 	},
-	"Graph Output": {
-		"type": "GraphNode",
-		"df_key": "dataframe",
-		"x_data_key": "MOS",
-		"y_data_keys": ["warp_q_mel", "warp_q_mfcc", "pesq"],
-		"y_labels": ["WARP-Q Distance", "WARP-Q Distance", "Predicted MOS"],
-		"titles": ["WARP-Q Mel", "WARP-Q MFCC", "PESQ"]
+    "Graph Output": {
+        "type": "IdentityNode"
 	}
 }

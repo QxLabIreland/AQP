@@ -4,7 +4,7 @@ python prepend_files.py --prepend_with "resources/" --dataset "../resources/quic
 if [ $? -eq 0 ]
 then
     cd ..
-    python pipeline.py --root_node_id "Load DF" --graph_config_path "config/example.json"
+    python pipeline.py --root_node_id "Load DF" --graph_config_path "config/example.json" --plot_graph
 else
     echo "Prepend files exitted with error code 1, not running pipeline"
 fi
